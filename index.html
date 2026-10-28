@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0a0708">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>LOST.DIR Visual Engine</title>
+<link rel="icon" href="data/cover.png">
+<style>
+  :root {
+    --bg: #0a0708;
+    --panel: #120c0e;
+    --line: #3a1a1f;
+    --text: #efe6e6;
+    --muted: #8a7376;
+    --red: #e8303a;
+    --red-dim: #5a1a20;
+    --mono: Consolas, "DejaVu Sans Mono", Menlo, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); overflow: hidden; }
+  body { display: grid; grid-template-rows: minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); height: 100dvh; width: 100vw; touch-action: manipulation; }
+
+  #stage { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; overflow: hidden; }
+  #view { display: block; touch-action: none; }
+  body.hide-ui #bar { display: none; }
+
+  /* Start overlay: browsers only allow audio after a tap */
+  #start {
+    position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; gap: 14px;
+    align-items: center; justify-content: center; background: rgba(10, 7, 8, 0.82); cursor: pointer; text-align: center;
+  }
+  #start h1 { margin: 0; color: var(--red); font-size: 22px; letter-spacing: 0.2em; }
+  #start p { margin: 0; color: var(--muted); font-size: 13px; letter-spacing: 0.15em; }
+  #start.hidden { display: none; }
+
+  #bar {
+    min-width: 0;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    padding: 6px 14px calc(10px + env(safe-area-inset-bottom));
+  }
+  #progress { position: relative; height: 22px; display: flex; align-items: center; touch-action: none; cursor: pointer; }
+  #progress .track { position: absolute; left: 0; right: 0; height: 3px; background: var(--red-dim); border-radius: 2px; }
+  #progress .fill { position: absolute; left: 0; height: 3px; width: 100%; background: var(--red); border-radius: 2px; transform-origin: left; transform: scaleX(0); }
+  .times { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: -2px; }
+  .row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .row button.icon { flex: none; }
+  .meta { flex: 1; min-width: 0; }
+  .meta .num { color: var(--red); font-size: 11px; letter-spacing: 0.1em; }
+  .meta .title { font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  button.icon {
+    width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel);
+    color: var(--text); font: 18px var(--mono); display: grid; place-items: center; cursor: pointer;
+  }
+  button.icon.primary { background: var(--red); border-color: var(--red); color: #fff; }
+  button.icon:active { transform: scale(0.94); }
+
+  /* Settings sheet */
+  #sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; max-height: 78dvh; overflow-y: auto;
+    background: var(--panel); border-top: 1px solid var(--line); border-radius: 14px 14px 0 0;
+    padding: 10px 18px calc(18px + env(safe-area-inset-bottom));
+    transform: translateY(105%); transition: transform 0.25s ease;
+  }
+  #sheet.open { transform: none; }
+  #sheet .grab { width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 8px; }
+  #sheet h2 { color: var(--red); font-size: 12px; letter-spacing: 0.12em; margin: 16px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .ctl { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; margin: 10px 0; font-size: 13px; }
+  .ctl .val { color: var(--red); font-size: 12px; }
+  .ctl input[type=range] { grid-column: 1 / -1; width: 100%; height: 28px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; }
+  .ctl input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--red-dim); }
+  .ctl input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--red-dim); }
+  .ctl input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--red); }
+  .ctl input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: -8px; border-radius: 50%; background: var(--red); border: 2px solid #fff2; }
+  .ctl input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--red); border: 2px solid #fff2; }
+  .switch { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 13px; }
+  .switch input { appearance: none; width: 44px; height: 24px; border-radius: 12px; background: #2a2024; position: relative; cursor: pointer; transition: background 0.2s; }
+  .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left 0.2s; }
+  .switch input:checked { background: var(--red); }
+  .switch input:checked::after { left: 23px; }
+  .vu { display: grid; grid-template-columns: 56px 1fr; align-items: center; gap: 6px 10px; font-size: 11px; color: var(--muted); }
+  .vu .meter { height: 6px; background: #22181b; border-radius: 3px; overflow: hidden; }
+  .vu .meter div { height: 100%; width: 100%; background: var(--red); transform-origin: left; transform: scaleX(0); }
+  .hint { color: var(--muted); font-size: 11px; line-height: 1.6; margin-top: 16px; }
+  #error { position: fixed; inset: auto 12px 12px 12px; z-index: 30; background: #3a0d12; color: #fff; padding: 12px; border-radius: 8px; font-size: 13px; display: none; }
+
+  @media (orientation: landscape) and (max-height: 600px) {
+    body { grid-template-rows: 1fr; }
+    #bar { position: fixed; left: 0; right: 0; bottom: 0; }
+  }
+</style>
+</head>
+<body>
+  <main id="stage"><canvas id="view" aria-label="LOST.DIR ASCII visualizer"></canvas></main>
+
+  <footer id="bar">
+    <div id="progress"><div class="track"></div><div class="fill" id="fill"></div></div>
+    <div class="times"><span id="t-cur">0:00</span><span id="t-dur">0:00</span></div>
+    <div class="row">
+      <div class="meta"><div class="num" id="num">TRACK 01/16</div><div class="title" id="title">LOST.DIR</div></div>
+      <button class="icon" id="prev" aria-label="Anterior">&#x23EE;</button>
+      <button class="icon primary" id="play" aria-label="Reproducir">&#x25B6;</button>
+      <button class="icon" id="next" aria-label="Siguiente">&#x23ED;</button>
+      <button class="icon" id="menu" aria-label="Ajustes">&#x2630;</button>
+    </div>
+  </footer>
+
+  <aside id="sheet" aria-label="Ajustes">
+    <div class="grab"></div>
+    <h2>RENDERING</h2>
+    <div class="ctl"><span>ASCII Density</span><span class="val" data-for="grid_size"></span>
+      <input type="range" data-key="grid_size" min="40" max="200" step="1"></div>
+    <div class="ctl"><span>Red Saturation</span><span class="val" data-for="red_intensity"></span>
+      <input type="range" data-key="red_intensity" min="0.5" max="2.5" step="0.01"></div>
+    <div class="ctl"><span>Contrast</span><span class="val" data-for="contrast"></span>
+      <input type="range" data-key="contrast" min="0.5" max="3" step="0.01"></div>
+    <div class="ctl"><span>Brightness</span><span class="val" data-for="brightness"></span>
+      <input type="range" data-key="brightness" min="0.2" max="2" step="0.01"></div>
+    <div class="ctl"><span>Shadow Detail</span><span class="val" data-for="shadow_detail"></span>
+      <input type="range" data-key="shadow_detail" min="0" max="2.5" step="0.01"></div>
+    <div class="ctl"><span>Black Crush</span><span class="val" data-for="black_crush"></span>
+      <input type="range" data-key="black_crush" min="0" max="0.3" step="0.01"></div>
+
+    <h2>ANALOG CRT</h2>
+    <label class="switch">CRT Scanlines <input type="checkbox" data-key="scanlines"></label>
+    <label class="switch">CRT Vignette <input type="checkbox" data-key="vignette"></label>
+    <label class="switch">Analog Film Grain <input type="checkbox" data-key="grain"></label>
+
+    <h2>AUDIO</h2>
+    <div class="ctl"><span>Volume</span><span class="val" data-for="volume"></span>
+      <input type="range" data-key="volume" min="0" max="1" step="0.01"></div>
+    <label class="switch">Audio Reactivity Sync <input type="checkbox" data-key="audio_reactive"></label>
+    <div class="ctl"><span>Beat Reaction Force</span><span class="val" data-for="audio_force"></span>
+      <input type="range" data-key="audio_force" min="0" max="2.5" step="0.1"></div>
+    <div class="vu">
+      <span>KICK</span><div class="meter"><div id="vu-kick"></div></div>
+      <span>SNARE</span><div class="meter"><div id="vu-snare"></div></div>
+      <span>BASS</span><div class="meter"><div id="vu-bass"></div></div>
+      <span>HI-HAT</span><div class="meter"><div id="vu-hat"></div></div>
+    </div>
+    <p class="hint">Toca la imagen para ocultar o mostrar los controles · desliza a los lados para cambiar de pista · doble toque para pantalla completa.</p>
+  </aside>
+
+  <div id="start"><h1>LOST.DIR</h1><p>VOL.I · TOCA PARA EMPEZAR</p></div>
+  <div id="error"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

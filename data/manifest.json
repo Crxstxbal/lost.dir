@@ -1,0 +1,119 @@
+{
+ "playlist": [
+  {
+   "index": 1,
+   "title": "LOST.DIR",
+   "audio": "data/tracks/01.mp3",
+   "analysis": "data/analysis/01.json"
+  },
+  {
+   "index": 2,
+   "title": "blood red sun",
+   "audio": "data/tracks/02.mp3",
+   "analysis": "data/analysis/02.json"
+  },
+  {
+   "index": 3,
+   "title": "black demon",
+   "audio": "data/tracks/03.mp3",
+   "analysis": "data/analysis/03.json"
+  },
+  {
+   "index": 4,
+   "title": "blackwater",
+   "audio": "data/tracks/04.mp3",
+   "analysis": "data/analysis/04.json"
+  },
+  {
+   "index": 5,
+   "title": "blackcell",
+   "audio": "data/tracks/05.mp3",
+   "analysis": "data/analysis/05.json"
+  },
+  {
+   "index": 6,
+   "title": "satya",
+   "audio": "data/tracks/06.mp3",
+   "analysis": "data/analysis/06.json"
+  },
+  {
+   "index": 7,
+   "title": "red leaf",
+   "audio": "data/tracks/07.mp3",
+   "analysis": "data/analysis/07.json"
+  },
+  {
+   "index": 8,
+   "title": "01_09.tmp",
+   "audio": "data/tracks/08.mp3",
+   "analysis": "data/analysis/08.json"
+  },
+  {
+   "index": 9,
+   "title": "lost files",
+   "audio": "data/tracks/09.mp3",
+   "analysis": "data/analysis/09.json"
+  },
+  {
+   "index": 10,
+   "title": "restored (interlude)",
+   "audio": "data/tracks/10.mp3",
+   "analysis": "data/analysis/10.json"
+  },
+  {
+   "index": 11,
+   "title": "lost in the dirt",
+   "audio": "data/tracks/11.mp3",
+   "analysis": "data/analysis/11.json"
+  },
+  {
+   "index": 12,
+   "title": "thorns",
+   "audio": "data/tracks/12.mp3",
+   "analysis": "data/analysis/12.json"
+  },
+  {
+   "index": 13,
+   "title": "Widow (Floral)",
+   "audio": "data/tracks/13.mp3",
+   "analysis": "data/analysis/13.json"
+  },
+  {
+   "index": 14,
+   "title": "Red shards V2",
+   "audio": "data/tracks/14.mp3",
+   "analysis": "data/analysis/14.json"
+  },
+  {
+   "index": 15,
+   "title": "Exuvia",
+   "audio": "data/tracks/15.mp3",
+   "analysis": "data/analysis/15.json"
+  },
+  {
+   "index": 16,
+   "title": "After the red sun",
+   "audio": "data/tracks/16.mp3",
+   "analysis": "data/analysis/16.json"
+  }
+ ],
+ "settings": {
+  "grid_size": 184,
+  "font_size": 13,
+  "ramp_name": "lostdir",
+  "contrast": 1.28,
+  "brightness": 1.18,
+  "red_intensity": 1.42,
+  "black_crush": 0.05,
+  "gamma": 0.95,
+  "shadow_detail": 1.93,
+  "scanlines": false,
+  "scanline_str": 0.2,
+  "vignette_str": 0.0,
+  "grain_str": 0.0,
+  "aberration_str": 0.001,
+  "audio_reactive": true,
+  "audio_force": 1.83,
+  "volume": 0.23
+ }
+}
